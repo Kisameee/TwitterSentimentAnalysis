@@ -15,4 +15,3 @@ public class TwitterEvent {
     private String body;
 
 }
-

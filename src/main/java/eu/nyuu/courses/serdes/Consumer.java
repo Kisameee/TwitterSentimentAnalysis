@@ -1,6 +1,8 @@
 package eu.nyuu.courses.serdes;
 
 import eu.nyuu.courses.model.TwitterEvent;
+import eu.nyuu.courses.model.MetricEvent;
+import eu.nyuu.courses.model.TwitterEventWithSentiment;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -15,6 +17,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import edu.stanford.nlp.simple.*;
+import org.apache.kafka.streams.kstream.internals.TimeWindow;
+
+
 public class Consumer extends Thread{
     Thread t;
 
@@ -24,7 +30,7 @@ public class Consumer extends Thread{
         final Properties streamsConfiguration = new Properties();
 
         streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "a-ke-kikou");
-        streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, "C:\\Users\\Beerus\\.IntelliJIdea2018.3\\system\\tmp\\kafka-stream\\");
+        streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka_streams");
         streamsConfiguration.put(StreamsConfig.CLIENT_ID_CONFIG, "my-stream0.0.0..-app-client");
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 
@@ -46,19 +52,21 @@ public class Consumer extends Thread{
         final KStream<String, TwitterEvent> twitterStream = builder
                 .stream("tweets", Consumed.with(stringSerde, TwitterEventSerde));
 
-//        KTable<Windowed<String>, Long> result = twitterStream
-//                .map((key, value) -> KeyValue.pair(value.getNick(), value))
-//                .groupByKey(Grouped.with(stringSerde, TwitterEventSerde))
-//                .windowedBy(TimeWindows.of(Duration.ofMillis(10000)))
-//                .count(Materialized.as("testStoreTweets"));
-        KTable<Windowed<String>, Long> result = twitterStream
-                .map((key, value) -> KeyValue.pair(value.getNick(), value))
-                .groupByKey(Grouped.with(stringSerde, TwitterEventSerde))
+
+        KStream<String, TwitterEventWithSentiment> result = twitterStream
+                .map((key, value) -> {
+                    return KeyValue.pair(value.getNick(), new TwitterEventWithSentiment(value, new Sentence(value.getBody()).sentiment().toString()));
+                });
+
+        KTable<Windowed<String>, MetricEvent> user = result.groupByKey(Grouped.with(Serdes.String(), SerdeFactory.createSerde(TwitterEventWithSentiment.class, serdeProps)))
                 .windowedBy(TimeWindows.of(Duration.ofMillis(10000)))
-                .count(Materialized.as("testStoreTweets"));
+                .aggregate(
+                        () -> new MetricEvent(),
+                        (aggKey, newValue, aggValue) -> new MetricEvent(aggValue, newValue)
+                );
 
+        user.toStream().print(Printed.toSysOut());
 
-        result.toStream().print(Printed.toSysOut());
 
         final KafkaStreams streams = new KafkaStreams(builder.build(), streamsConfiguration);
         streams.cleanUp();
