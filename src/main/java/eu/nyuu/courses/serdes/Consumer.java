@@ -4,13 +4,11 @@ import eu.nyuu.courses.model.TwitterEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.*;
-import org.apache.kafka.streams.state.WindowStore;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -48,13 +46,20 @@ public class Consumer extends Thread{
         final KStream<String, TwitterEvent> twitterStream = builder
                 .stream("tweets", Consumed.with(stringSerde, TwitterEventSerde));
 
+//        KTable<Windowed<String>, Long> result = twitterStream
+//                .map((key, value) -> KeyValue.pair(value.getNick(), value))
+//                .groupByKey(Grouped.with(stringSerde, TwitterEventSerde))
+//                .windowedBy(TimeWindows.of(Duration.ofMillis(10000)))
+//                .count(Materialized.as("testStoreTweets"));
         KTable<Windowed<String>, Long> result = twitterStream
                 .map((key, value) -> KeyValue.pair(value.getNick(), value))
-                .groupByKey()
+                .groupByKey(Grouped.with(stringSerde, TwitterEventSerde))
                 .windowedBy(TimeWindows.of(Duration.ofMillis(10000)))
                 .count(Materialized.as("testStoreTweets"));
 
-        System.out.printf(">>> ", result.toString() );
+
+        result.toStream().print(Printed.toSysOut());
+
         final KafkaStreams streams = new KafkaStreams(builder.build(), streamsConfiguration);
         streams.cleanUp();
         streams.start();
