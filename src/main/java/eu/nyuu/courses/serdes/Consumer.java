@@ -37,7 +37,6 @@ public class Consumer extends Thread{
         streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka_streams");
         streamsConfiguration.put(StreamsConfig.CLIENT_ID_CONFIG, "my-stream0.0.0..-app-client");
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-
         // Where to find Kafka broker(s)
         streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         // Specify default (de)serializers for record keys and for record values
@@ -52,8 +51,6 @@ public class Consumer extends Thread{
         // Stream
         final StreamsBuilder builder = new StreamsBuilder();
 
-        // Here you go :)
-
         final KStream<String, TwitterEvent> twitterStream = builder
                 .stream("tweets", Consumed.with(stringSerde, TwitterEventSerde));
 
@@ -66,11 +63,10 @@ public class Consumer extends Thread{
                 .aggregate(
                         () -> new MetricEvent(),
                         (aggKey, newValue, aggValue) -> new MetricEvent(aggValue, newValue),
-
                         Materialized
                                 .<String, MetricEvent, WindowStore< Bytes, byte[]>> as ("twitterStoreUser").withValueSerde(MetricEventSerde)
                 );
-        user.toStream().print(Printed.toSysOut());
+//        user.toStream().print(Printed.toSysOut());
 
 
         // aggregation par jour
@@ -85,7 +81,7 @@ public class Consumer extends Thread{
                         Materialized
                                 .<String, MetricEvent, WindowStore<Bytes, byte[]>>as("twitterStore_date").withValueSerde(MetricEventSerde)
                 );
-        timestamp.toStream().print(Printed.toSysOut());
+//        timestamp.toStream().print(Printed.toSysOut());
 
 
         final KafkaStreams streams = new KafkaStreams(builder.build(), streamsConfiguration);
@@ -109,11 +105,11 @@ public class Consumer extends Thread{
 
                 Instant now = Instant.now();
                 // fetching all values for the last day/month/year in the window
-                Instant lastMinute = now.minus(Duration.ofDays(1));
+                Instant lastDay = now.minus(Duration.ofDays(1));
                 Instant lastMonth = now.minus(Duration.ofDays(30));
                 Instant lastYear = now.minus(Duration.ofDays(365));
 
-                WindowStoreIterator<MetricEvent> iterator = windowStore.fetch("KEY", lastMinute, now);
+                WindowStoreIterator<MetricEvent> iterator = windowStore.fetch("KEY", lastDay, now);
                 MetricEvent dayMetricEvent = new MetricEvent();
                 while (iterator.hasNext()) {
                     KeyValue<Long, MetricEvent> next = iterator.next();
@@ -121,7 +117,7 @@ public class Consumer extends Thread{
                 }
                 // close the iterator to release resources
                 iterator.close();
-                System.out.println("DEBUG Last minute : " + dayMetricEvent.toString());
+                System.out.println("DEBUG Last day : " + dayMetricEvent.toString());
 
                 // fetching all values for the last month in the window
                 iterator = windowStore.fetch("KEY", lastMonth, now);
@@ -144,13 +140,19 @@ public class Consumer extends Thread{
                 iterator.close();
                 System.out.println("DEBUG Last year : " + yearMetricEvent.toString());
 
-            }
+                windowStore =
+                        streams.store("twitterStore_user", QueryableStoreTypes.windowStore());
 
-            // Dumping all keys every minute
-            try {
-                Thread.sleep(Duration.ofMinutes(1).toMillis());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                iterator = windowStore.fetch("USERNAME", lastDay, now);
+                MetricEvent day_userMetricEvent = new MetricEvent();
+                while (iterator.hasNext()) {
+                    KeyValue<Long, MetricEvent> next = iterator.next();
+                    day_userMetricEvent.append(next.value);
+                }
+                // close the iterator to release resources
+                iterator.close();
+                System.out.println("DEBUG Last minute : " + day_userMetricEvent.toString());
+
             }
         }
     }
