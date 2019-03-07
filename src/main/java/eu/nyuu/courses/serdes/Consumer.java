@@ -14,13 +14,15 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.*;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 import edu.stanford.nlp.simple.*;
 import org.apache.kafka.streams.kstream.internals.TimeWindow;
-import org.apache.kafka.streams.state.WindowStore;
+import org.apache.kafka.streams.state.*;
+@SuppressWarnings("Duplicates")
 
 
 public class Consumer extends Thread{
@@ -55,25 +57,101 @@ public class Consumer extends Thread{
         final KStream<String, TwitterEvent> twitterStream = builder
                 .stream("tweets", Consumed.with(stringSerde, TwitterEventSerde));
 
-
-        KStream<String, TwitterEventWithSentiment> result = twitterStream
+        // aggregation par user
+        KStream<String, TwitterEventWithSentiment> result_user = twitterStream
                 .map((key, value) -> KeyValue.pair(value.getNick(), new TwitterEventWithSentiment(value, new Sentence(value.getBody()).sentiment().toString())));
 
-        KTable<Windowed<String>, MetricEvent> user = result.groupByKey(Grouped.with(Serdes.String(), SerdeFactory.createSerde(TwitterEventWithSentiment.class, serdeProps)))
+        KTable<Windowed<String>, MetricEvent> user = result_user.groupByKey(Grouped.with(Serdes.String(), SerdeFactory.createSerde(TwitterEventWithSentiment.class, serdeProps)))
                 .windowedBy(TimeWindows.of(Duration.ofMillis(10000)))
                 .aggregate(
                         () -> new MetricEvent(),
                         (aggKey, newValue, aggValue) -> new MetricEvent(aggValue, newValue),
 
                         Materialized
-                                .<String, MetricEvent, WindowStore< Bytes, byte[]>> as ("twitterStore").withValueSerde(MetricEventSerde)
+                                .<String, MetricEvent, WindowStore< Bytes, byte[]>> as ("twitterStoreUser").withValueSerde(MetricEventSerde)
                 );
-
         user.toStream().print(Printed.toSysOut());
+
+
+        // aggregation par jour
+        KStream<String, TwitterEventWithSentiment> result_timestamp = twitterStream
+                .map((key, value) -> KeyValue.pair("KEY", new TwitterEventWithSentiment(value, new Sentence(value.getBody()).sentiment().toString())));
+
+        KTable<Windowed<String>, MetricEvent> timestamp = result_timestamp.groupByKey(Grouped.with(Serdes.String(), SerdeFactory.createSerde(TwitterEventWithSentiment.class, serdeProps)))
+                .windowedBy(TimeWindows.of(Duration.ofMillis(10000)))
+                .aggregate(
+                        () -> new MetricEvent(),
+                        (aggKey, newValue, aggValue) -> new MetricEvent(aggValue, newValue),
+                        Materialized
+                                .<String, MetricEvent, WindowStore<Bytes, byte[]>>as("twitterStore_date").withValueSerde(MetricEventSerde)
+                );
+        timestamp.toStream().print(Printed.toSysOut());
 
 
         final KafkaStreams streams = new KafkaStreams(builder.build(), streamsConfiguration);
         streams.cleanUp();
         streams.start();
+
+        // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
+        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+
+        try {
+            Thread.sleep(Duration.ofMinutes(1).toMillis());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        while (true) {
+            if (streams.state() == KafkaStreams.State.RUNNING) {
+                // Querying our local store
+                ReadOnlyWindowStore<String, MetricEvent> windowStore =
+                        streams.store("twitterStore_date", QueryableStoreTypes.windowStore());
+
+                Instant now = Instant.now();
+                // fetching all values for the last day/month/year in the window
+                Instant lastMinute = now.minus(Duration.ofDays(1));
+                Instant lastMonth = now.minus(Duration.ofDays(30));
+                Instant lastYear = now.minus(Duration.ofDays(365));
+
+                WindowStoreIterator<MetricEvent> iterator = windowStore.fetch("KEY", lastMinute, now);
+                MetricEvent dayMetricEvent = new MetricEvent();
+                while (iterator.hasNext()) {
+                    KeyValue<Long, MetricEvent> next = iterator.next();
+                    dayMetricEvent.append(next.value);
+                }
+                // close the iterator to release resources
+                iterator.close();
+                System.out.println("DEBUG Last minute : " + dayMetricEvent.toString());
+
+                // fetching all values for the last month in the window
+                iterator = windowStore.fetch("KEY", lastMonth, now);
+                MetricEvent monthMetricEvent = new MetricEvent();
+                while (iterator.hasNext()) {
+                    KeyValue<Long, MetricEvent> next = iterator.next();
+                    monthMetricEvent.append(next.value);
+                }
+                // close the iterator to release resources
+                iterator.close();
+                System.out.println("DEBUG Last month : " + monthMetricEvent.toString());
+
+                iterator = windowStore.fetch("KEY", lastYear, now);
+                MetricEvent yearMetricEvent = new MetricEvent();
+                while (iterator.hasNext()) {
+                    KeyValue<Long, MetricEvent> next = iterator.next();
+                    yearMetricEvent.append(next.value);
+                }
+                // close the iterator to release resources
+                iterator.close();
+                System.out.println("DEBUG Last year : " + yearMetricEvent.toString());
+
+            }
+
+            // Dumping all keys every minute
+            try {
+                Thread.sleep(Duration.ofMinutes(1).toMillis());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
