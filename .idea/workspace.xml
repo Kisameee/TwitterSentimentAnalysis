@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6f168c6f-6df9-4969-923a-566cf0de78ab" name="Default Changelist" comment="consumer">
+      <change beforePath="$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/MetricEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/MetricEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/TwitterEventWithSentiment.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/TwitterEventWithSentiment.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/eu/nyuu/courses/serdes/Consumer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/eu/nyuu/courses/serdes/Consumer.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
@@ -16,7 +18,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/eu/nyuu/courses/Main.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
+            <state relative-caret-position="210">
               <caret line="15" selection-start-line="15" selection-end-line="15" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -40,8 +42,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/TwitterEventWithSentiment.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="223">
-              <caret line="20" column="22" lean-forward="true" selection-start-line="20" selection-start-column="22" selection-end-line="20" selection-end-column="22" />
+            <state relative-caret-position="328">
+              <caret line="27" selection-start-line="27" selection-end-line="27" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -49,13 +51,14 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/eu/nyuu/courses/serdes/Consumer.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="223">
-              <caret line="60" column="31" selection-start-line="60" selection-start-column="31" selection-end-line="60" selection-end-column="31" />
+            <state relative-caret-position="238">
+              <caret line="66" lean-forward="true" selection-start-line="66" selection-end-line="66" />
               <folding>
                 <element signature="imports" expanded="true" />
+                <element signature="e#3092#3142#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -64,17 +67,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pom.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="252">
+            <state relative-caret-position="1170">
               <caret line="78" column="30" selection-start-line="78" selection-start-column="30" selection-end-line="78" selection-end-column="30" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/MetricEvent.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="375">
-              <caret line="25" column="1" selection-start-line="25" selection-start-column="1" selection-end-line="25" selection-end-column="1" />
+            <state relative-caret-position="112">
+              <caret line="24" column="86" selection-start-line="24" selection-start-column="86" selection-end-line="24" selection-end-column="86" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -116,11 +119,11 @@
         <option value="$PROJECT_DIR$/src/main/resources/log4j.properties" />
         <option value="$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/HashToSourceResponse.java" />
         <option value="$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/TwitterEvent.java" />
-        <option value="$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/TwitterEventWithSentiment.java" />
-        <option value="$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/MetricEvent.java" />
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/src/main/java/eu/nyuu/courses/Main.java" />
+        <option value="$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/TwitterEventWithSentiment.java" />
         <option value="$PROJECT_DIR$/src/main/java/eu/nyuu/courses/serdes/Consumer.java" />
+        <option value="$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/MetricEvent.java" />
       </list>
     </option>
   </component>
@@ -164,8 +167,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
-      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -236,6 +237,8 @@
           <select />
         </subPane>
       </pane>
+      <pane id="PackagesPane" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -263,6 +266,7 @@
   <component name="RunManager">
     <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="eu.nyuu.courses.Main" />
+      <module name="kafka-streams-app" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="eu.nyuu.courses.*" />
@@ -296,6 +300,7 @@
       <workItem from="1551719294575" duration="1548000" />
       <workItem from="1551863626008" duration="14548000" />
       <workItem from="1551888058988" duration="6831000" />
+      <workItem from="1551950351432" duration="1588000" />
     </task>
     <task id="LOCAL-00001" summary="consumer">
       <created>1551886943136</created>
@@ -308,7 +313,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="39084000" />
+    <option name="totallyTimeSpent" value="40672000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -321,8 +326,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="26" width="1600" height="846" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.8159204" visible="true" weight="0.15894467" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.8159204" visible="true" weight="0.16087516" />
       <window_info id="Structure" order="1" sideWeight="0.18004866" side_tool="true" weight="0.32275712" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -331,8 +337,8 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.35180056" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.3504823" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.31855956" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.3504155" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.3290461" />
@@ -390,6 +396,15 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="consumer" />
     <option name="LAST_COMMIT_MESSAGE" value="consumer" />
+  </component>
+  <component name="debuggerHistoryManager">
+    <expressions id="evaluateExpression">
+      <expression>
+        <expression-string>sentiment.getSentiment()</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+    </expressions>
   </component>
   <component name="editorHistoryManager">
     <entry file="jar://$MAVEN_REPOSITORY$/org/apache/kafka/kafka-clients/2.1.0/kafka-clients-2.1.0.jar!/org/apache/kafka/clients/consumer/KafkaConsumer.class">
@@ -460,10 +475,28 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/Sentiment.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/Sentiment.java" />
+    <entry file="file://$PROJECT_DIR$/src/main/resources/log4j.properties">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="22" selection-start-line="2" selection-start-column="22" selection-end-line="2" selection-end-column="22" />
+        <state relative-caret-position="105">
+          <caret line="7" column="1" selection-start-line="7" selection-start-column="1" selection-end-line="7" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/eu/nyuu/courses/Main.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="15" selection-start-line="15" selection-end-line="15" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1170">
+          <caret line="78" column="30" selection-start-line="78" selection-start-column="30" selection-end-line="78" selection-end-column="30" />
         </state>
       </provider>
     </entry>
@@ -477,54 +510,31 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/MetricEvent.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/eu/nyuu/courses/serdes/Consumer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="375">
-          <caret line="25" column="1" selection-start-line="25" selection-start-column="1" selection-end-line="25" selection-end-column="1" />
+        <state relative-caret-position="238">
+          <caret line="66" lean-forward="true" selection-start-line="66" selection-end-line="66" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#3092#3142#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pom.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="252">
-          <caret line="78" column="30" selection-start-line="78" selection-start-column="30" selection-end-line="78" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/eu/nyuu/courses/Main.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" selection-start-line="15" selection-end-line="15" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/resources/log4j.properties">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="7" column="1" selection-start-line="7" selection-start-column="1" selection-end-line="7" selection-end-column="1" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/TwitterEventWithSentiment.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="223">
-          <caret line="20" column="22" lean-forward="true" selection-start-line="20" selection-start-column="22" selection-end-line="20" selection-end-column="22" />
+        <state relative-caret-position="328">
+          <caret line="27" selection-start-line="27" selection-end-line="27" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/eu/nyuu/courses/serdes/Consumer.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/eu/nyuu/courses/model/MetricEvent.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="223">
-          <caret line="60" column="31" selection-start-line="60" selection-start-column="31" selection-end-line="60" selection-end-column="31" />
+        <state relative-caret-position="112">
+          <caret line="24" column="86" selection-start-line="24" selection-start-column="86" selection-end-line="24" selection-end-column="86" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

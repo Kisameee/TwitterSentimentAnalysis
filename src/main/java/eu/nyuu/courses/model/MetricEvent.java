@@ -23,13 +23,18 @@ public class MetricEvent {
         neutral=metricEvent.getNeutral();
     }
     public MetricEvent(MetricEvent metricEvent, TwitterEventWithSentiment sentiment) {
-        if (sentiment.getSentiment() == "positive") {
+        if (sentiment.getSentiment().equals("POSITIVE") || sentiment.getSentiment().equals("VERY_POSITIVE")) {
             this.setPositive(getPositive() + 1);
-        } else if (sentiment.getSentiment() == "negative") {
+        } else if (sentiment.getSentiment().equals("NEGATIVE") || sentiment.getSentiment().equals("VERY_NEGATIVE")) {
             this.setNegative(getNegative() + 1);
         } else {
             this.setNeutral(getNeutral() + 1);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Negative = " + Integer.toString(negative) + " Positive = " + Integer.toString(positive) + " Neutral = " + Integer.toString(neutral) ;
     }
 }
 

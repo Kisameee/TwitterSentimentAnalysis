@@ -6,6 +6,7 @@ import eu.nyuu.courses.model.TwitterEventWithSentiment;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -19,6 +20,7 @@ import java.util.Properties;
 
 import edu.stanford.nlp.simple.*;
 import org.apache.kafka.streams.kstream.internals.TimeWindow;
+import org.apache.kafka.streams.state.WindowStore;
 
 
 public class Consumer extends Thread{
@@ -26,7 +28,7 @@ public class Consumer extends Thread{
 
     public void run() {
 
-        final String bootstrapServers = "163.172.145.138:9092";
+        final String bootstrapServers = "51.15.90.153:9092";
         final Properties streamsConfiguration = new Properties();
 
         streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "a-ke-kikou");
@@ -43,6 +45,7 @@ public class Consumer extends Thread{
         final Serde<String> stringSerde = Serdes.String();
         final Map<String, Object> serdeProps = new HashMap<>();
         final Serde<TwitterEvent> TwitterEventSerde = SerdeFactory.createSerde(TwitterEvent.class, serdeProps);
+        final Serde<MetricEvent> MetricEventSerde = SerdeFactory.createSerde(MetricEvent.class, serdeProps);
 
         // Stream
         final StreamsBuilder builder = new StreamsBuilder();
@@ -54,15 +57,16 @@ public class Consumer extends Thread{
 
 
         KStream<String, TwitterEventWithSentiment> result = twitterStream
-                .map((key, value) -> {
-                    return KeyValue.pair(value.getNick(), new TwitterEventWithSentiment(value, new Sentence(value.getBody()).sentiment().toString()));
-                });
+                .map((key, value) -> KeyValue.pair(value.getNick(), new TwitterEventWithSentiment(value, new Sentence(value.getBody()).sentiment().toString())));
 
         KTable<Windowed<String>, MetricEvent> user = result.groupByKey(Grouped.with(Serdes.String(), SerdeFactory.createSerde(TwitterEventWithSentiment.class, serdeProps)))
                 .windowedBy(TimeWindows.of(Duration.ofMillis(10000)))
                 .aggregate(
                         () -> new MetricEvent(),
-                        (aggKey, newValue, aggValue) -> new MetricEvent(aggValue, newValue)
+                        (aggKey, newValue, aggValue) -> new MetricEvent(aggValue, newValue),
+
+                        Materialized
+                                .<String, MetricEvent, WindowStore< Bytes, byte[]>> as ("twitterStore").withValueSerde(MetricEventSerde)
                 );
 
         user.toStream().print(Printed.toSysOut());

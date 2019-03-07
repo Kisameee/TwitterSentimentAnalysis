@@ -18,6 +18,9 @@ public class TwitterEventWithSentiment {
         this.sentiment = sentiment;
 
     }
+    public TwitterEventWithSentiment(){
+
+    }
     private String id;
     private String timestamp;
     private String nick;
