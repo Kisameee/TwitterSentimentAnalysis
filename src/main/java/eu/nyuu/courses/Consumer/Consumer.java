@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import edu.stanford.nlp.simple.*;
 import org.apache.kafka.streams.kstream.internals.TimeWindow;
@@ -83,6 +84,25 @@ public class Consumer extends Thread{
                                 .<String, MetricEvent, WindowStore<Bytes, byte[]>>as("twitterStore_date").withValueSerde(MetricEventSerde)
                 );
 //        timestamp.toStream().print(Printed.toSysOut());
+
+        // aggregation par hashtag
+        Pattern pattern = Pattern.compile("(?:^|\\s|[\\p{Punct}&&[^/]])(#[\\p{L}0-9-_]+)");
+        KStream<String, TwitterEventWithSentiment> result_hashtag  = twitterStream
+                .map((key, value) -> KeyValue.pair(
+                        (pattern.matcher(value.getBody()).find()) ?
+                                pattern.matcher(value.getBody()).group() : "null"  ,
+                        new TwitterEventWithSentiment(value,
+                                new Sentence(value.getBody()).sentiment().toString())));
+
+        KTable<Windowed<String>, MetricEvent> hashtag = result_hashtag.groupByKey(Grouped.with(Serdes.String(), SerdeFactory.createSerde(TwitterEventWithSentiment.class, serdeProps)))
+                .windowedBy(TimeWindows.of(Duration.ofMillis(10000)))
+                .aggregate(
+                        () -> new MetricEvent(),
+                        (aggKey, newValue, aggValue) -> new MetricEvent(aggValue, newValue),
+                        Materialized
+                                .<String, MetricEvent, WindowStore<Bytes, byte[]>>as("twitterStore_hashtag").withValueSerde(MetricEventSerde)
+                );
+//        hashtag.toStream().print(Printed.toSysOut());
 
 
         final KafkaStreams streams = new KafkaStreams(builder.build(), streamsConfiguration);

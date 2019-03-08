@@ -34,6 +34,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Scanner;
 
 @Slf4j
 @Getter
@@ -50,7 +51,7 @@ public class GlobalController {
         final String bootstrapServers = "51.15.90.153:9092";
         final Properties streamsConfiguration = new Properties();
         streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "a-ke-kikou");
-        streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, "C:\\tmp\\kafka-streams\\TWEET_LAGHOUAL_AY\\0_0");
+        streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, "C:\\Users\\Beerus\\.IntelliJIdea2018.3\\system\\tmp\\kafka-stream");
         streamsConfiguration.put(StreamsConfig.CLIENT_ID_CONFIG, "my-stream0.0.0..-app-client");
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         // Where to find Kafka broker(s)
@@ -107,7 +108,7 @@ public class GlobalController {
     }
 
 
-    @GetMapping("/store/lastday")
+    @GetMapping("/lastday")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public MetricEvent get() {
         if (streams.state() == KafkaStreams.State.RUNNING) {
@@ -138,7 +139,7 @@ public class GlobalController {
     public void getDefault() {
         if (streams.state() == KafkaStreams.State.RUNNING) {
 
-            log.debug("Your stream starded correctly");
+            System.out.println("Your stream starded correctly");
 
         } else {
             throw new BadRequestException();
@@ -146,7 +147,7 @@ public class GlobalController {
     }
 
 
-    @GetMapping("/store/lastmonth")
+    @GetMapping("/lastmonth")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public MetricEvent get2() {
         if (streams.state() == KafkaStreams.State.RUNNING) {
@@ -172,7 +173,7 @@ public class GlobalController {
     }
 
 
-    @GetMapping("/store/lastyear")
+    @GetMapping("/lastyear")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public MetricEvent get3() {
         if (streams.state() == KafkaStreams.State.RUNNING) {
@@ -199,7 +200,7 @@ public class GlobalController {
     }
 
 
-    @GetMapping("/store/user")
+    @GetMapping("/user")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public MetricEvent get4() {
         if (streams.state() == KafkaStreams.State.RUNNING) {
@@ -210,7 +211,37 @@ public class GlobalController {
             // fetching all values for the last day/month/year in the window
             Instant lastDay = now.minus(Duration.ofDays(1));
 
-            WindowStoreIterator<MetricEvent> iterator = windowStore.fetch("USERNAME", lastDay, now);
+            String user =  "toto";
+
+            WindowStoreIterator<MetricEvent> iterator = windowStore.fetch("toto", lastDay, now);
+            MetricEvent day_userMetricEvent = new MetricEvent();
+            while (iterator.hasNext()) {
+                KeyValue<Long, MetricEvent> next = iterator.next();
+                day_userMetricEvent.append(next.value);
+            }
+            // close the iterator to release resources
+            iterator.close();
+            return day_userMetricEvent;
+
+        } else {
+            throw new BadRequestException();
+        }
+    }
+
+    @GetMapping("/#")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public MetricEvent get5() {
+        if (streams.state() == KafkaStreams.State.RUNNING) {
+            // Querying our local store
+            ReadOnlyWindowStore<String, MetricEvent> windowStore =
+                    streams.store("twitterStore_hashtag", QueryableStoreTypes.windowStore());
+            Instant now = Instant.now();
+            // fetching all values for the last day/month/year in the window
+            Instant lastDay = now.minus(Duration.ofDays(1));
+
+            String hashtag = "blue";
+
+            WindowStoreIterator<MetricEvent> iterator = windowStore.fetch(hashtag, lastDay, now);
             MetricEvent day_userMetricEvent = new MetricEvent();
             while (iterator.hasNext()) {
                 KeyValue<Long, MetricEvent> next = iterator.next();
