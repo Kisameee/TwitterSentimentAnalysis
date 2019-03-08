@@ -1,8 +1,15 @@
-package eu.nyuu.courses.serdes;
+package eu.nyuu.courses.Controller;
 
-import eu.nyuu.courses.model.TwitterEvent;
+
+import edu.stanford.nlp.simple.Sentence;
 import eu.nyuu.courses.model.MetricEvent;
+import eu.nyuu.courses.model.TwitterEvent;
 import eu.nyuu.courses.model.TwitterEventWithSentiment;
+import eu.nyuu.courses.serdes.SerdeFactory;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -12,27 +19,36 @@ import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.*;
+import org.apache.kafka.streams.state.QueryableStoreTypes;
+import org.apache.kafka.streams.state.ReadOnlyWindowStore;
+import org.apache.kafka.streams.state.WindowStore;
+import org.apache.kafka.streams.state.WindowStoreIterator;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
+import javax.ws.rs.BadRequestException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import edu.stanford.nlp.simple.*;
-import org.apache.kafka.streams.kstream.internals.TimeWindow;
-import org.apache.kafka.streams.state.*;
+
+@Getter
+@Setter
+@ToString
+@RestController
 @SuppressWarnings("Duplicates")
+public class GlobalController {
+    private KafkaStreams streams;
 
 
-public class Consumer extends Thread{
-    Thread t;
-
-    public void run() {
+    public GlobalController() {
 
         final String bootstrapServers = "51.15.90.153:9092";
         final Properties streamsConfiguration = new Properties();
-
         streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "a-ke-kikou");
         streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, "C:\\Users\\Beerus\\.IntelliJIdea2018.3\\system\\tmp\\kafka-stream");
         streamsConfiguration.put(StreamsConfig.CLIENT_ID_CONFIG, "my-stream0.0.0..-app-client");
@@ -64,7 +80,7 @@ public class Consumer extends Thread{
                         () -> new MetricEvent(),
                         (aggKey, newValue, aggValue) -> new MetricEvent(aggValue, newValue),
                         Materialized
-                                .<String, MetricEvent, WindowStore< Bytes, byte[]>> as ("twitterStoreUser").withValueSerde(MetricEventSerde)
+                                .<String, MetricEvent, WindowStore<Bytes, byte[]>>as("twitterStoreUser").withValueSerde(MetricEventSerde)
                 );
 //        user.toStream().print(Printed.toSysOut());
 
@@ -84,76 +100,37 @@ public class Consumer extends Thread{
 //        timestamp.toStream().print(Printed.toSysOut());
 
 
-        final KafkaStreams streams = new KafkaStreams(builder.build(), streamsConfiguration);
-        streams.cleanUp();
-        streams.start();
+        this.streams = new KafkaStreams(builder.build(), streamsConfiguration);
+        this.streams.cleanUp();
+        this.streams.start();
 
-        // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
-        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+    }
 
-        try {
-            Thread.sleep(Duration.ofMinutes(1).toMillis());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    @GetMapping("/store")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public MetricEvent get() {
+        if (streams.state() == KafkaStreams.State.RUNNING) {
+            // Querying our local store
+            ReadOnlyWindowStore<String, MetricEvent> windowStore =
+                    streams.store("twitterStore_date", QueryableStoreTypes.windowStore());
+            Instant now = Instant.now();
+            // fetching all values for the last day/month/year in the window
+            Instant lastDay = now.minus(Duration.ofDays(1));
+            Instant lastMonth = now.minus(Duration.ofDays(30));
+            Instant lastYear = now.minus(Duration.ofDays(365));
 
-        while (true) {
-            if (streams.state() == KafkaStreams.State.RUNNING) {
-                // Querying our local store
-                ReadOnlyWindowStore<String, MetricEvent> windowStore =
-                        streams.store("twitterStore_date", QueryableStoreTypes.windowStore());
-
-                Instant now = Instant.now();
-                // fetching all values for the last day/month/year in the window
-                Instant lastDay = now.minus(Duration.ofDays(1));
-                Instant lastMonth = now.minus(Duration.ofDays(30));
-                Instant lastYear = now.minus(Duration.ofDays(365));
-
-                WindowStoreIterator<MetricEvent> iterator = windowStore.fetch("KEY", lastDay, now);
-                MetricEvent dayMetricEvent = new MetricEvent();
-                while (iterator.hasNext()) {
-                    KeyValue<Long, MetricEvent> next = iterator.next();
-                    dayMetricEvent.append(next.value);
-                }
-                // close the iterator to release resources
-                iterator.close();
-                System.out.println("DEBUG Last day : " + dayMetricEvent.toString());
-
-                // fetching all values for the last month in the window
-                iterator = windowStore.fetch("KEY", lastMonth, now);
-                MetricEvent monthMetricEvent = new MetricEvent();
-                while (iterator.hasNext()) {
-                    KeyValue<Long, MetricEvent> next = iterator.next();
-                    monthMetricEvent.append(next.value);
-                }
-                // close the iterator to release resources
-                iterator.close();
-                System.out.println("DEBUG Last month : " + monthMetricEvent.toString());
-
-                iterator = windowStore.fetch("KEY", lastYear, now);
-                MetricEvent yearMetricEvent = new MetricEvent();
-                while (iterator.hasNext()) {
-                    KeyValue<Long, MetricEvent> next = iterator.next();
-                    yearMetricEvent.append(next.value);
-                }
-                // close the iterator to release resources
-                iterator.close();
-                System.out.println("DEBUG Last year : " + yearMetricEvent.toString());
-
-                windowStore =
-                        streams.store("twitterStore_user", QueryableStoreTypes.windowStore());
-
-                iterator = windowStore.fetch("USERNAME", lastDay, now);
-                MetricEvent day_userMetricEvent = new MetricEvent();
-                while (iterator.hasNext()) {
-                    KeyValue<Long, MetricEvent> next = iterator.next();
-                    day_userMetricEvent.append(next.value);
-                }
-                // close the iterator to release resources
-                iterator.close();
-                System.out.println("DEBUG Last minute : " + day_userMetricEvent.toString());
-
+            WindowStoreIterator<MetricEvent> iterator = windowStore.fetch("KEY", lastDay, now);
+            MetricEvent dayMetricEvent = new MetricEvent();
+            while (iterator.hasNext()) {
+                KeyValue<Long, MetricEvent> next = iterator.next();
+                dayMetricEvent.append(next.value);
             }
+            // close the iterator to release resources
+            iterator.close();
+            return dayMetricEvent;
+
+        } else {
+            throw new BadRequestException();
         }
     }
 }
