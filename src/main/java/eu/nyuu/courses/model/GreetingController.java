@@ -57,6 +57,8 @@ public class GreetingController {
 */
     @RequestMapping("/TwitterEvent")
     public void TwitterEvent(@RequestParam(value="name", defaultValue="TwitterEvent") String name) {
+        /*
+        
         streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "a-ke-kikou");
         streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, "C:\\tmp\\kafka-streams\\TWEET_LAGHOUAL_AY\\0_0");
         streamsConfiguration.put(StreamsConfig.CLIENT_ID_CONFIG, "my-stream0.0.0..-app-client");
@@ -72,7 +74,7 @@ public class GreetingController {
         final Map<String, Object> serdeProps = new HashMap<>();
         final Serde<TwitterEvent> TwitterEventSerde = SerdeFactory.createSerde(TwitterEvent.class, serdeProps);
         final Serde<MetricEvent> MetricEventSerde = SerdeFactory.createSerde(MetricEvent.class, serdeProps);
-
+    */
         // Stream
         final StreamsBuilder builder = new StreamsBuilder();
 
