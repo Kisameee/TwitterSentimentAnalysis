@@ -1,8 +1,9 @@
-package eu.nyuu.courses.serdes;
+package eu.nyuu.courses.Consumer;
 
 import eu.nyuu.courses.model.TwitterEvent;
 import eu.nyuu.courses.model.MetricEvent;
 import eu.nyuu.courses.model.TwitterEventWithSentiment;
+import eu.nyuu.courses.serdes.SerdeFactory;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;

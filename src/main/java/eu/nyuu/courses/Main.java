@@ -1,6 +1,6 @@
 package eu.nyuu.courses;
 //
-//import eu.nyuu.courses.serdes.Consumer;
+//import eu.nyuu.courses.Consumer.Consumer;
 //import lombok.extern.slf4j.Slf4j;
 //
 //
@@ -15,7 +15,7 @@ package eu.nyuu.courses;
 //}
 
 
-import eu.nyuu.courses.serdes.Consumer;
+import eu.nyuu.courses.Consumer.Consumer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
